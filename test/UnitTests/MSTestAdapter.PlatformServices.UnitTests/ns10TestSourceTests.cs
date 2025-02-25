@@ -13,18 +13,27 @@ public class TestSourceTests : TestContainer
 
     public TestSourceTests() => _testSource = new TestSource();
 
-    public void ValidSourceExtensionsShouldContainDllExtensions() => Verify(_testSource.ValidSourceExtensions.ToList().Contains(".dll"));
+    public void ValidSourceExtensionsShouldContainDllExtensions()
+        => Verify(_testSource.ValidSourceExtensions.ToList().Contains(".dll"));
 
-    public void ValidSourceExtensionsShouldContainExeExtensions() => Verify(_testSource.ValidSourceExtensions.ToList().Contains(".exe"));
+    public void ValidSourceExtensionsShouldContainExeExtensions()
+        => Verify(_testSource.ValidSourceExtensions.ToList().Contains(".exe"));
 
     public void IsAssemblyReferencedShouldReturnTrueIfSourceOrAssemblyNameIsNull()
     {
-        Verify(_testSource.IsAssemblyReferenced(null, null));
-        Verify(_testSource.IsAssemblyReferenced(null, string.Empty));
-        Verify(_testSource.IsAssemblyReferenced(new AssemblyName(), null));
+        Verify(_testSource.IsAssemblyReferenced(null!, null!));
+        Verify(_testSource.IsAssemblyReferenced(null!, string.Empty));
+        Verify(_testSource.IsAssemblyReferenced(new AssemblyName(), null!));
     }
 
-    public void IsAssemblyReferencedShouldReturnTrueForAllSourceOrAssemblyNames() => Verify(_testSource.IsAssemblyReferenced(new AssemblyName("ReferenceAssembly"), "SourceAssembly"));
+    public void IsAssemblyReferencedShouldReturnTrueForAllSourceOrAssemblyNames()
+    {
+#if !NET462
+#pragma warning disable IDE0022 // Use expression body for method
+        Verify(_testSource.IsAssemblyReferenced(new AssemblyName("ReferenceAssembly"), "SourceAssembly"));
+#pragma warning restore IDE0022 // Use expression body for method
+#endif
+    }
 }
 
 #pragma warning restore SA1649 // SA1649FileNameMustMatchTypeName

@@ -6,6 +6,8 @@ using System.Collections.Immutable;
 using Microsoft.MSTestV2.CLIAutomation;
 using Microsoft.VisualStudio.TestPlatform.ObjectModel;
 
+using TestResult = Microsoft.VisualStudio.TestPlatform.ObjectModel.TestResult;
+
 namespace MSTest.IntegrationTests;
 
 public class DataExtensibilityTests : CLITestBase
@@ -41,7 +43,7 @@ public class DataExtensibilityTests : CLITestBase
         ImmutableArray<TestResult> testResults = await RunTestsAsync(testCases);
 
         // Assert
-        VerifyE2E.ContainsTestsFailed(testResults, new string[] { null });
+        VerifyE2E.ContainsTestsFailed(testResults, new string[] { null! });
     }
 
     public async Task AssertExtensibilityTests()

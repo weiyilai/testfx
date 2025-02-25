@@ -15,11 +15,13 @@ using Microsoft.VisualStudio.TestPlatform.ObjectModel.Logging;
 
 using TestFramework.ForTestingMSTest;
 
+using TestResult = Microsoft.VisualStudio.TestPlatform.ObjectModel.TestResult;
+
 namespace Microsoft.MSTestV2.CLIAutomation;
 
 public partial class CLITestBase : TestContainer
 {
-    internal static ImmutableArray<TestCase> DiscoverTests(string assemblyPath, string testCaseFilter = null)
+    internal static ImmutableArray<TestCase> DiscoverTests(string assemblyPath, string? testCaseFilter = null)
     {
         var unitTestDiscoverer = new UnitTestDiscoverer();
         var logger = new InternalLogger();
@@ -59,9 +61,9 @@ public partial class CLITestBase : TestContainer
 
     private class InternalDiscoveryContext : IDiscoveryContext
     {
-        private readonly ITestCaseFilterExpression _filter;
+        private readonly ITestCaseFilterExpression? _filter;
 
-        public InternalDiscoveryContext(string runSettings, string testCaseFilter)
+        public InternalDiscoveryContext(string runSettings, string? testCaseFilter)
         {
             RunSettings = new InternalRunSettings(runSettings);
 
@@ -71,9 +73,9 @@ public partial class CLITestBase : TestContainer
             }
         }
 
-        public IRunSettings RunSettings { get; }
+        public IRunSettings? RunSettings { get; }
 
-        public ITestCaseFilterExpression GetTestCaseFilter(IEnumerable<string> supportedProperties, Func<string, TestProperty> propertyProvider) => _filter;
+        public ITestCaseFilterExpression? GetTestCaseFilter(IEnumerable<string> supportedProperties, Func<string, TestProperty> propertyProvider) => _filter;
 
         private class InternalRunSettings : IRunSettings
         {
@@ -81,7 +83,7 @@ public partial class CLITestBase : TestContainer
 
             public string SettingsXml { get; }
 
-            public ISettingsProvider GetSettings(string settingsName) => throw new NotImplementedException();
+            public ISettingsProvider? GetSettings(string? settingsName) => throw new NotImplementedException();
         }
     }
 
@@ -90,7 +92,7 @@ public partial class CLITestBase : TestContainer
         private readonly List<string> _messageList = [];
         private readonly ConcurrentDictionary<TestCase, ConcurrentBag<TestResult>> _testResults = new();
 
-        private ConcurrentBag<TestResult> _activeResults;
+        private ConcurrentBag<TestResult> _activeResults = new();
 
         public bool EnableShutdownAfterTestRun { get; set; }
 
@@ -117,7 +119,7 @@ public partial class CLITestBase : TestContainer
 
         public void SendMessage(TestMessageLevel testMessageLevel, string message) => _messageList.Add($"{testMessageLevel}:{message}");
 
-        public int LaunchProcessWithDebuggerAttached(string filePath, string workingDirectory, string arguments, IDictionary<string, string> environmentVariables)
+        public int LaunchProcessWithDebuggerAttached(string filePath, string? workingDirectory, string? arguments, IDictionary<string, string?>? environmentVariables)
             => throw new NotImplementedException();
     }
     #endregion
