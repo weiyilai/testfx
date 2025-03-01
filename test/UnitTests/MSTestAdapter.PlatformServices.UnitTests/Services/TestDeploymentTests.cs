@@ -7,7 +7,6 @@ using Microsoft.VisualStudio.TestPlatform.MSTestAdapter.PlatformServices.Utiliti
 using Microsoft.VisualStudio.TestPlatform.ObjectModel;
 using Microsoft.VisualStudio.TestPlatform.ObjectModel.Adapter;
 using Microsoft.VisualStudio.TestPlatform.ObjectModel.Utilities;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 using Moq;
 
@@ -44,16 +43,14 @@ public class TestDeploymentTests : TestContainer
 
     public void GetDeploymentItemsReturnsNullWhenNoDeploymentItems()
     {
-        MethodInfo methodInfo =
-            typeof(TestDeploymentTests).GetMethod("GetDeploymentItemsReturnsNullWhenNoDeploymentItems");
-
+        MethodInfo methodInfo = typeof(TestDeploymentTests).GetMethod("GetDeploymentItemsReturnsNullWhenNoDeploymentItems")!;
         Verify(new TestDeployment().GetDeploymentItems(methodInfo, typeof(TestDeploymentTests), _warnings) is null);
     }
 
     public void GetDeploymentItemsReturnsDeploymentItems()
     {
         // Arrange.
-        var testDeployment = new TestDeployment(new DeploymentItemUtility(_mockReflectionUtility.Object), null, null);
+        var testDeployment = new TestDeployment(new DeploymentItemUtility(_mockReflectionUtility.Object), null!, null!);
 
         // setup mocks
         KeyValuePair<string, string>[] methodLevelDeploymentItems =
@@ -68,14 +65,12 @@ public class TestDeploymentTests : TestContainer
                 DefaultDeploymentItemPath + "\\temp2",
                 DefaultDeploymentItemOutputDirectory)
         ];
-        MethodInfo memberInfo =
-            typeof(TestDeploymentTests).GetMethod(
-                "GetDeploymentItemsReturnsDeploymentItems");
+        MethodInfo memberInfo = typeof(TestDeploymentTests).GetMethod("GetDeploymentItemsReturnsDeploymentItems")!;
         SetupDeploymentItems(memberInfo, methodLevelDeploymentItems);
         SetupDeploymentItems(typeof(TestDeploymentTests), classLevelDeploymentItems);
 
         // Act.
-        KeyValuePair<string, string>[] deploymentItems = testDeployment.GetDeploymentItems(memberInfo, typeof(TestDeploymentTests), _warnings);
+        KeyValuePair<string, string>[]? deploymentItems = testDeployment.GetDeploymentItems(memberInfo, typeof(TestDeploymentTests), _warnings);
 
         // Assert.
         var expectedDeploymentItems = new KeyValuePair<string, string>[]
@@ -97,7 +92,7 @@ public class TestDeploymentTests : TestContainer
 
     public void CleanupShouldNotDeleteDirectoriesIfRunDirectoriesIsNull()
     {
-        var testDeployment = new TestDeployment(null, null, _mockFileUtility.Object);
+        var testDeployment = new TestDeployment(null!, null!, _mockFileUtility.Object);
 
         testDeployment.Cleanup();
 
@@ -196,7 +191,7 @@ public class TestDeploymentTests : TestContainer
         mstestSettingsProvider.Load(reader);
 
         // Deployment should not happen
-        Verify(!testDeployment.Deploy(new List<TestCase> { testCase }, null, null));
+        Verify(!testDeployment.Deploy(new List<TestCase> { testCase }, null, null!));
 
         // Deployment directories should not be created
         Verify(testDeployment.GetDeploymentDirectory() is null);
@@ -219,7 +214,7 @@ public class TestDeploymentTests : TestContainer
         mstestSettingsProvider.Load(reader);
 
         // Deployment should not happen
-        Verify(!testDeployment.Deploy(new List<TestCase> { testCase }, null, null));
+        Verify(!testDeployment.Deploy(new List<TestCase> { testCase }, null, null!));
 
         // Deployment directories should get created
         Verify(testDeployment.GetDeploymentDirectory() is not null);
@@ -242,7 +237,7 @@ public class TestDeploymentTests : TestContainer
         mstestSettingsProvider.Load(reader);
 
         // Deployment should not happen
-        Verify(!testDeployment.Deploy(new List<TestCase> { testCase }, null, null));
+        Verify(!testDeployment.Deploy(new List<TestCase> { testCase }, null, null!));
 
         // Deployment directories should get created
         Verify(testDeployment.GetDeploymentDirectory() is not null);
@@ -287,7 +282,7 @@ public class TestDeploymentTests : TestContainer
         TestDeployment.Reset();
         IDictionary<string, object> properties = TestDeployment.GetDeploymentInformation(typeof(TestDeploymentTests).Assembly.Location);
 
-        string applicationBaseDirectory = Path.GetDirectoryName(typeof(TestDeploymentTests).Assembly.Location);
+        string applicationBaseDirectory = Path.GetDirectoryName(typeof(TestDeploymentTests).Assembly.Location)!;
         var expectedProperties = new Dictionary<string, object>
         {
             [TestContext.TestRunDirectoryLabel] = applicationBaseDirectory,
@@ -411,7 +406,7 @@ public class TestDeploymentTests : TestContainer
 
     private TestDeployment CreateAndSetupDeploymentRelatedUtilities(out TestRunDirectories testRunDirectories)
     {
-        string currentExecutingFolder = Path.GetDirectoryName(typeof(TestDeploymentTests).Assembly.Location);
+        string currentExecutingFolder = Path.GetDirectoryName(typeof(TestDeploymentTests).Assembly.Location)!;
 
         testRunDirectories = new TestRunDirectories(currentExecutingFolder);
 

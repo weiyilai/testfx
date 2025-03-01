@@ -1,8 +1,6 @@
 ﻿// Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-using Microsoft.VisualStudio.TestTools.UnitTesting;
-
 namespace Microsoft.VisualStudio.TestPlatform.TestFramework.UnitTests;
 
 public partial class AssertTests
@@ -68,7 +66,7 @@ public partial class AssertTests
             async () => await Task.Delay(5).ConfigureAwait(false));
         Exception ex = VerifyThrows(t.Wait);
 
-        Exception innerException = ex.InnerException;
+        Exception? innerException = ex.InnerException;
 
         Verify(innerException is not null);
         Verify(typeof(AssertFailedException) == innerException.GetType());
@@ -85,7 +83,7 @@ public partial class AssertTests
             });
         Exception ex = VerifyThrows(t.Wait);
 
-        Exception innerException = ex.InnerException;
+        Exception? innerException = ex.InnerException;
 
         Verify(innerException is not null);
         Assert.AreEqual(typeof(AssertFailedException), innerException.GetType());
@@ -99,7 +97,7 @@ public partial class AssertTests
             "The world is not on fire.");
         Exception ex = VerifyThrows(t.Wait);
 
-        Exception innerException = ex.InnerException;
+        Exception? innerException = ex.InnerException;
 
         Verify(innerException is not null);
         Assert.AreEqual(typeof(AssertFailedException), innerException.GetType());
@@ -117,7 +115,7 @@ public partial class AssertTests
             "Happily ever after.");
         Exception ex = VerifyThrows(t.Wait);
 
-        Exception innerException = ex.InnerException;
+        Exception? innerException = ex.InnerException;
 
         Verify(innerException is not null);
         Assert.AreEqual(typeof(AssertFailedException), innerException.GetType());
@@ -128,13 +126,13 @@ public partial class AssertTests
     {
         static void A()
         {
-            Task t = Assert.ThrowsExceptionAsync<ArgumentException>(null, null, null);
+            Task t = Assert.ThrowsExceptionAsync<ArgumentException>(null!, null!, null);
             t.Wait();
         }
 
         Exception ex = VerifyThrows(A);
 
-        Exception innerException = ex.InnerException;
+        Exception? innerException = ex.InnerException;
 
         Verify(innerException is not null);
         Verify(typeof(ArgumentNullException) == innerException.GetType());
@@ -144,13 +142,13 @@ public partial class AssertTests
     {
         static void A()
         {
-            Task t = Assert.ThrowsExceptionAsync<ArgumentException>(async () => await Task.FromResult(true).ConfigureAwait(false), null, null);
+            Task t = Assert.ThrowsExceptionAsync<ArgumentException>(async () => await Task.FromResult(true).ConfigureAwait(false), null!, null);
             t.Wait();
         }
 
         Exception ex = VerifyThrows(A);
 
-        Exception innerException = ex.InnerException;
+        Exception? innerException = ex.InnerException;
 
         Verify(innerException is not null);
         Verify(typeof(ArgumentNullException) == innerException.GetType());
@@ -166,7 +164,7 @@ public partial class AssertTests
             123);
         Exception ex = VerifyThrows(t.Wait);
 
-        Exception innerException = ex.InnerException;
+        Exception? innerException = ex.InnerException;
 
         Verify(innerException is not null);
         Assert.AreEqual(typeof(AssertFailedException), innerException.GetType());
@@ -186,7 +184,7 @@ public partial class AssertTests
             "End");
         Exception ex = VerifyThrows(t.Wait);
 
-        Exception innerException = ex.InnerException;
+        Exception? innerException = ex.InnerException;
 
         Verify(innerException is not null);
         Assert.AreEqual(typeof(AssertFailedException), innerException.GetType());
@@ -251,7 +249,7 @@ public partial class AssertTests
     public void Throws_WithMessageBuilder_FailsBecauseNoException()
     {
         bool wasBuilderCalled = false;
-        Exception exceptionPassedToBuilder = null;
+        Exception? exceptionPassedToBuilder = null;
         AssertFailedException assertFailedEx = VerifyThrows<AssertFailedException>(() => Assert.Throws<ArgumentNullException>(() => { }, messageBuilder: ex =>
         {
             wasBuilderCalled = true;
@@ -267,7 +265,7 @@ public partial class AssertTests
     public void Throws_WithMessageBuilder_FailsBecauseTypeMismatch()
     {
         bool wasBuilderCalled = false;
-        Exception exceptionPassedToBuilder = null;
+        Exception? exceptionPassedToBuilder = null;
         AssertFailedException assertFailedEx = VerifyThrows<AssertFailedException>(() => Assert.Throws<ArgumentNullException>(() => throw new ArgumentOutOfRangeException("MyParamNameHere"), messageBuilder: ex =>
         {
             wasBuilderCalled = true;
@@ -295,7 +293,7 @@ public partial class AssertTests
     public void ThrowsExactly_WithMessageBuilder_FailsBecauseNoException()
     {
         bool wasBuilderCalled = false;
-        Exception exceptionPassedToBuilder = null;
+        Exception? exceptionPassedToBuilder = null;
         AssertFailedException assertFailedEx = VerifyThrows<AssertFailedException>(() => Assert.ThrowsExactly<ArgumentNullException>(() => { }, messageBuilder: ex =>
         {
             wasBuilderCalled = true;
@@ -311,7 +309,7 @@ public partial class AssertTests
     public void ThrowsExactly_WithMessageBuilder_FailsBecauseTypeMismatch()
     {
         bool wasBuilderCalled = false;
-        Exception exceptionPassedToBuilder = null;
+        Exception? exceptionPassedToBuilder = null;
         AssertFailedException assertFailedEx = VerifyThrows<AssertFailedException>(() => Assert.ThrowsExactly<ArgumentNullException>(() => throw new ArgumentOutOfRangeException("MyParamNameHere"), messageBuilder: ex =>
         {
             wasBuilderCalled = true;
@@ -339,7 +337,7 @@ public partial class AssertTests
     public async Task ThrowsAsync_WithMessageBuilder_FailsBecauseNoException()
     {
         bool wasBuilderCalled = false;
-        Exception exceptionPassedToBuilder = null;
+        Exception? exceptionPassedToBuilder = null;
         AssertFailedException assertFailedEx = await VerifyThrowsAsync<AssertFailedException>(async () => await Assert.ThrowsAsync<ArgumentNullException>(() => Task.CompletedTask, messageBuilder: ex =>
         {
             wasBuilderCalled = true;
@@ -355,7 +353,7 @@ public partial class AssertTests
     public async Task ThrowsAsync_WithMessageBuilder_FailsBecauseTypeMismatch()
     {
         bool wasBuilderCalled = false;
-        Exception exceptionPassedToBuilder = null;
+        Exception? exceptionPassedToBuilder = null;
         AssertFailedException assertFailedEx = await VerifyThrowsAsync<AssertFailedException>(async () => await Assert.ThrowsAsync<ArgumentNullException>(() => Task.FromException(new ArgumentOutOfRangeException("MyParamNameHere")), messageBuilder: ex =>
         {
             wasBuilderCalled = true;
@@ -383,7 +381,7 @@ public partial class AssertTests
     public async Task ThrowsExactlyAsync_WithMessageBuilder_FailsBecauseNoException()
     {
         bool wasBuilderCalled = false;
-        Exception exceptionPassedToBuilder = null;
+        Exception? exceptionPassedToBuilder = null;
         AssertFailedException assertFailedEx = await VerifyThrowsAsync<AssertFailedException>(async () => await Assert.ThrowsExactlyAsync<ArgumentNullException>(() => Task.CompletedTask, messageBuilder: ex =>
         {
             wasBuilderCalled = true;
@@ -399,7 +397,7 @@ public partial class AssertTests
     public async Task ThrowsExactlyAsync_WithMessageBuilder_FailsBecauseTypeMismatch()
     {
         bool wasBuilderCalled = false;
-        Exception exceptionPassedToBuilder = null;
+        Exception? exceptionPassedToBuilder = null;
         AssertFailedException assertFailedEx = await VerifyThrowsAsync<AssertFailedException>(async () => await Assert.ThrowsExactlyAsync<ArgumentNullException>(() => Task.FromException(new ArgumentOutOfRangeException("MyParamNameHere")), messageBuilder: ex =>
         {
             wasBuilderCalled = true;

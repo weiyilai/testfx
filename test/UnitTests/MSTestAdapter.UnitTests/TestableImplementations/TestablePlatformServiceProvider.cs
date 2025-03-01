@@ -4,98 +4,41 @@
 using Microsoft.VisualStudio.TestPlatform.MSTest.TestAdapter;
 using Microsoft.VisualStudio.TestPlatform.MSTestAdapter.PlatformServices;
 using Microsoft.VisualStudio.TestPlatform.MSTestAdapter.PlatformServices.Interface;
-using Microsoft.VisualStudio.TestPlatform.MSTestAdapter.PlatformServices.Interface.ObjectModel;
 using Microsoft.VisualStudio.TestPlatform.ObjectModel.Logging;
 
 using Moq;
 
+using ITestDataSource = Microsoft.VisualStudio.TestPlatform.MSTestAdapter.PlatformServices.Interface.ITestDataSource;
+using ITestMethod = Microsoft.VisualStudio.TestPlatform.MSTestAdapter.PlatformServices.Interface.ObjectModel.ITestMethod;
 using UTF = Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Microsoft.VisualStudio.TestPlatform.MSTestAdapter.UnitTests.TestableImplementations;
 
 internal class TestablePlatformServiceProvider : IPlatformServiceProvider
 {
-    public TestablePlatformServiceProvider()
-    {
-        MockTestSourceValidator = new Mock<ITestSource>();
-        MockFileOperations = new Mock<IFileOperations>();
-        MockTraceLogger = new Mock<IAdapterTraceLogger>();
-        MockTestSourceHost = new Mock<ITestSourceHost>();
-        MockTestDeployment = new Mock<ITestDeployment>();
-        MockSettingsProvider = new Mock<ISettingsProvider>();
-        MockTestDataSource = new Mock<ITestDataSource>();
-        MockTraceListener = new Mock<ITraceListener>();
-        MockTraceListenerManager = new Mock<ITraceListenerManager>();
-        MockThreadOperations = new Mock<IThreadOperations>();
-    }
-
     #region Mock Implementations
 
-    public Mock<ITestSource> MockTestSourceValidator
-    {
-        get;
-        set;
-    }
+    public Mock<ITestSource> MockTestSourceValidator { get; } = new();
 
-    public Mock<IFileOperations> MockFileOperations
-    {
-        get;
-        set;
-    }
+    public Mock<IFileOperations> MockFileOperations { get; } = new();
 
-    public Mock<IAdapterTraceLogger> MockTraceLogger
-    {
-        get;
-        set;
-    }
+    public Mock<IAdapterTraceLogger> MockTraceLogger { get; } = new();
 
-    public Mock<ITestSourceHost> MockTestSourceHost
-    {
-        get;
-        set;
-    }
+    public Mock<ITestSourceHost> MockTestSourceHost { get; } = new();
 
-    public Mock<ITestDeployment> MockTestDeployment
-    {
-        get;
-        set;
-    }
+    public Mock<ITestDeployment> MockTestDeployment { get; } = new();
 
-    public Mock<ISettingsProvider> MockSettingsProvider
-    {
-        get;
-        set;
-    }
+    public Mock<ISettingsProvider> MockSettingsProvider { get; } = new();
 
-    public Mock<ITestDataSource> MockTestDataSource
-    {
-        get;
-        set;
-    }
+    public Mock<ITestDataSource> MockTestDataSource { get; } = new();
 
-    public Mock<ITraceListener> MockTraceListener
-    {
-        get;
-        set;
-    }
+    public Mock<ITraceListener> MockTraceListener { get; } = new();
 
-    public Mock<ITraceListenerManager> MockTraceListenerManager
-    {
-        get;
-        set;
-    }
+    public Mock<ITraceListenerManager> MockTraceListenerManager { get; } = new();
 
-    public Mock<IThreadOperations> MockThreadOperations
-    {
-        get;
-        set;
-    }
+    public Mock<IThreadOperations> MockThreadOperations { get; } = new();
 
-    public Mock<IReflectionOperations2> MockReflectionOperations
-    {
-        get;
-        set;
-    }
+    public Mock<IReflectionOperations2> MockReflectionOperations { get; set; } = null!;
 
     #endregion
 
@@ -111,6 +54,8 @@ internal class TestablePlatformServiceProvider : IPlatformServiceProvider
 
     public IThreadOperations ThreadOperations => MockThreadOperations.Object;
 
+    [field: AllowNull]
+    [field: MaybeNull]
     public IReflectionOperations2 ReflectionOperations
     {
         get => MockReflectionOperations != null
@@ -121,18 +66,18 @@ internal class TestablePlatformServiceProvider : IPlatformServiceProvider
 
     public ITestDataSource TestDataSource => MockTestDataSource.Object;
 
-    public TestRunCancellationToken TestRunCancellationToken { get; set; }
+    public TestRunCancellationToken? TestRunCancellationToken { get; set; }
 
     public bool IsGracefulStopRequested { get; set; }
 
-    public ITestContext GetTestContext(ITestMethod testMethod, StringWriter writer, IDictionary<string, object> properties, IMessageLogger messageLogger, UTF.UnitTestOutcome outcome)
+    public ITestContext GetTestContext(ITestMethod testMethod, StringWriter writer, IDictionary<string, object?> properties, IMessageLogger messageLogger, UTF.UnitTestOutcome outcome)
     {
         var testContextImpl = new TestContextImplementation(testMethod, writer, properties, messageLogger);
         testContextImpl.SetOutcome(outcome);
         return testContextImpl;
     }
 
-    public ITestSourceHost CreateTestSourceHost(string source, TestPlatform.ObjectModel.Adapter.IRunSettings runSettings, TestPlatform.ObjectModel.Adapter.IFrameworkHandle frameworkHandle) => MockTestSourceHost.Object;
+    public ITestSourceHost CreateTestSourceHost(string source, TestPlatform.ObjectModel.Adapter.IRunSettings? runSettings, TestPlatform.ObjectModel.Adapter.IFrameworkHandle? frameworkHandle) => MockTestSourceHost.Object;
 
     public ITraceListener GetTraceListener(TextWriter textWriter) => MockTraceListener.Object;
 

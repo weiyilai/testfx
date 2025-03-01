@@ -12,16 +12,24 @@ namespace Microsoft.MSTestV2.CLIAutomation;
 
 public partial class CLITestBase : TestContainer
 {
-    private static VsTestConsoleWrapper s_vsTestConsoleWrapper;
-    private DiscoveryEventsHandler _discoveryEventsHandler;
+    private static VsTestConsoleWrapper? s_vsTestConsoleWrapper;
+    private DiscoveryEventsHandler? _discoveryEventsHandler;
 
     public CLITestBase()
     {
-        s_vsTestConsoleWrapper = new VsTestConsoleWrapper(GetConsoleRunnerPath());
+        s_vsTestConsoleWrapper = new(
+            GetConsoleRunnerPath(),
+            new()
+            {
+                EnvironmentVariables = new()
+                {
+                    ["DOTNET_ROOT"] = FindDotNetRoot(),
+                },
+            });
         s_vsTestConsoleWrapper.StartSession();
     }
 
-    protected RunEventsHandler RunEventsHandler { get; private set; }
+    protected RunEventsHandler RunEventsHandler { get; private set; } = null!;
 
     /// <summary>
     /// Invokes <c>vstest.console</c> to discover tests in the provided sources.
@@ -29,14 +37,14 @@ public partial class CLITestBase : TestContainer
     /// <param name="sources">Collection of test containers.</param>
     /// <param name="runSettings">Run settings for execution.</param>
     /// <param name="targetFramework">Target framework for the test run.</param>
-    public void InvokeVsTestForDiscovery(string[] sources, string runSettings = "", string targetFramework = null)
+    public void InvokeVsTestForDiscovery(string[] sources, string runSettings = "", string? targetFramework = null)
     {
         ExpandTestSourcePaths(sources, targetFramework);
 
         _discoveryEventsHandler = new DiscoveryEventsHandler();
         string runSettingsXml = GetRunSettingsXml(runSettings);
 
-        s_vsTestConsoleWrapper.DiscoverTests(sources, runSettingsXml, _discoveryEventsHandler);
+        s_vsTestConsoleWrapper!.DiscoverTests(sources, runSettingsXml, _discoveryEventsHandler);
     }
 
     /// <summary>
@@ -46,14 +54,14 @@ public partial class CLITestBase : TestContainer
     /// <param name="runSettings">Run settings for execution.</param>
     /// <param name="testCaseFilter">Test Case filter for execution.</param>
     /// <param name="targetFramework">Target framework for the test run.</param>
-    public void InvokeVsTestForExecution(string[] sources, string runSettings = "", string testCaseFilter = null, string targetFramework = null)
+    public void InvokeVsTestForExecution(string[] sources, string runSettings = "", string? testCaseFilter = null, string? targetFramework = null)
     {
         ExpandTestSourcePaths(sources, targetFramework);
 
         RunEventsHandler = new RunEventsHandler();
         string runSettingsXml = GetRunSettingsXml(runSettings);
 
-        s_vsTestConsoleWrapper.RunTests(sources, runSettingsXml, new TestPlatformOptions { TestCaseFilter = testCaseFilter }, RunEventsHandler);
+        s_vsTestConsoleWrapper!.RunTests(sources, runSettingsXml, new TestPlatformOptions { TestCaseFilter = testCaseFilter }, RunEventsHandler);
         if (RunEventsHandler.Errors.Count != 0)
         {
             throw new Exception($"Run failed with {RunEventsHandler.Errors.Count} errors:{Environment.NewLine}{string.Join(Environment.NewLine, RunEventsHandler.Errors)}");
@@ -114,13 +122,13 @@ public partial class CLITestBase : TestContainer
     {
         foreach (string test in discoveredTestsList)
         {
-            bool flag = _discoveryEventsHandler.Tests.Contains(test)
+            bool flag = _discoveryEventsHandler!.Tests.Contains(test)
                        || _discoveryEventsHandler.Tests.Contains(GetTestMethodName(test));
             flag.Should().BeTrue("Test '{0}' does not appear in discovered tests list.", test);
         }
 
         // Make sure only expected number of tests are discovered and not more.
-        discoveredTestsList.Should().HaveSameCount(_discoveryEventsHandler.Tests);
+        discoveredTestsList.Should().HaveSameCount(_discoveryEventsHandler!.Tests);
     }
 
     /// <summary>
@@ -205,12 +213,12 @@ public partial class CLITestBase : TestContainer
             bool isFailed = failedTestResults.Any(
                 p => test.Equals(p.TestCase?.FullyQualifiedName, StringComparison.Ordinal)
                      || test.Equals(p.DisplayName, StringComparison.Ordinal)
-                     || test.Equals(p.TestCase.DisplayName, StringComparison.Ordinal));
+                     || test.Equals(p.TestCase!.DisplayName, StringComparison.Ordinal));
 
             bool isSkipped = skippedTestsResults.Any(
                 p => test.Equals(p.TestCase?.FullyQualifiedName, StringComparison.Ordinal)
                      || test.Equals(p.DisplayName, StringComparison.Ordinal)
-                     || test.Equals(p.TestCase.DisplayName, StringComparison.Ordinal));
+                     || test.Equals(p.TestCase!.DisplayName, StringComparison.Ordinal));
 
             string failedOrSkippedMessage = isFailed ? " (Test failed)" : isSkipped ? " (Test skipped)" : string.Empty;
 
@@ -240,6 +248,7 @@ public partial class CLITestBase : TestContainer
                        test.Equals(f.DisplayName, StringComparison.Ordinal));
             testFound.Should().NotBeNull("Test '{0}' does not appear in failed tests list.", test);
 
+#if DEBUG
             if (!validateStackTraceInfo)
             {
                 continue;
@@ -252,6 +261,7 @@ public partial class CLITestBase : TestContainer
             {
                 testFound.ErrorStackTrace.Should().Contain(testMethodName, "No stack trace for failed test: {0}", test);
             }
+#endif
         }
     }
 
@@ -300,7 +310,7 @@ public partial class CLITestBase : TestContainer
     /// </summary>
     /// <param name="paths">An array of file paths, elements may be modified to absolute paths.</param>
     /// <param name="targetFramework">Target framework for the test run.</param>
-    private void ExpandTestSourcePaths(string[] paths, string targetFramework = null)
+    private void ExpandTestSourcePaths(string[] paths, string? targetFramework = null)
     {
         for (int i = 0; i < paths.Length; i++)
         {
@@ -308,5 +318,27 @@ public partial class CLITestBase : TestContainer
 
             paths[i] = !Path.IsPathRooted(path) ? GetAssetFullPath(path, targetFramework: targetFramework) : Path.GetFullPath(path);
         }
+    }
+
+    private static string FindDotNetRoot()
+    {
+        string dotNetRoot = Environment.GetEnvironmentVariable("DOTNET_ROOT");
+        if (!string.IsNullOrEmpty(dotNetRoot))
+        {
+            return dotNetRoot;
+        }
+
+        var currentDirectory = new DirectoryInfo(Directory.GetCurrentDirectory());
+        do
+        {
+            string folderName = ".dotnet";
+            if (currentDirectory.EnumerateDirectories(folderName).Any())
+            {
+                return Path.Combine(currentDirectory.FullName, folderName);
+            }
+        }
+        while ((currentDirectory = currentDirectory.Parent) != null);
+
+        throw new InvalidOperationException("Could not find .dotnet folder in the current directory or any parent directories.");
     }
 }
